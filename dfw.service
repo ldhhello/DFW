@@ -1,0 +1,11 @@
+[Unit]
+Description=DFW Firewall Daemon
+Before=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/dfw-daemon &
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
