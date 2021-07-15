@@ -33,4 +33,7 @@ private:
 	void on_reload();
 	void on_redirect();
 	void on_iptables();
+	void on_snat();
+	void on_dnat();
+	void on_masquerade();
 };

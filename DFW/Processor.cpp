@@ -158,3 +158,126 @@ bool Processor::iptables(const string& rule, bool is_delete)
 	cout << "Rule successfully added!" << endl;
 	return true;
 }
+
+bool Processor::snat(const string& port, const string& source, const string& to, bool is_delete)
+{
+	vector<string> port_vec;
+	boost::split(port_vec, port, boost::is_any_of("/"));
+
+	if (port_vec.size() > 2)
+		return false;
+
+	int protocol = PROTOCOL_ALL; // TCP + UDP
+
+	if (port_vec.size() == 2)
+	{
+		if (port_vec[1] == "tcp")
+			protocol = PROTOCOL_TCP;
+		else if (port_vec[1] == "udp")
+			protocol = PROTOCOL_UDP;
+		else if (port_vec[1] == "icmp")
+			protocol = PROTOCOL_ICMP;
+	}
+
+	Packet req, res;
+	req.set_method(METHOD_SNAT);
+	req.push(protocol);
+	req.push(atoi(port_vec[0].c_str()));
+	req.push(source);
+	req.push(to);
+	req.push(is_delete);
+
+	if (!request(req, res))
+		return false;
+
+	if (res.method == METHOD_ERROR)
+	{
+		cout << "An error was occured! Error : " << res.get_string(0) << endl;
+		return false;
+	}
+
+	cout << "Rule successfully added!" << endl;
+	return true;
+}
+
+bool Processor::dnat(const string& port, const string& source, const string& to, bool is_delete)
+{
+	vector<string> port_vec;
+	boost::split(port_vec, port, boost::is_any_of("/"));
+
+	if (port_vec.size() > 2)
+		return false;
+
+	int protocol = PROTOCOL_ALL; // TCP + UDP
+
+	if (port_vec.size() == 2)
+	{
+		if (port_vec[1] == "tcp")
+			protocol = PROTOCOL_TCP;
+		else if (port_vec[1] == "udp")
+			protocol = PROTOCOL_UDP;
+		else if (port_vec[1] == "icmp")
+			protocol = PROTOCOL_ICMP;
+	}
+
+	Packet req, res;
+	req.set_method(METHOD_DNAT);
+	req.push(protocol);
+	req.push(atoi(port_vec[0].c_str()));
+	req.push(source);
+	req.push(to);
+	req.push(is_delete);
+
+	if (!request(req, res))
+		return false;
+
+	if (res.method == METHOD_ERROR)
+	{
+		cout << "An error was occured! Error : " << res.get_string(0) << endl;
+		return false;
+	}
+
+	cout << "Rule successfully added!" << endl;
+	return true;
+}
+
+bool Processor::masquerade(const string& port, const string& source, const string& to, bool is_delete)
+{
+	vector<string> port_vec;
+	boost::split(port_vec, port, boost::is_any_of("/"));
+
+	if (port_vec.size() > 2)
+		return false;
+
+	int protocol = PROTOCOL_ALL; // TCP + UDP
+
+	if (port_vec.size() == 2)
+	{
+		if (port_vec[1] == "tcp")
+			protocol = PROTOCOL_TCP;
+		else if (port_vec[1] == "udp")
+			protocol = PROTOCOL_UDP;
+		else if (port_vec[1] == "icmp")
+			protocol = PROTOCOL_ICMP;
+	}
+
+	Packet req, res;
+	req.set_method(METHOD_MASQUERADE);
+	req.push(protocol);
+	req.push(atoi(port_vec[0].c_str()));
+	req.push(source);
+	req.push(""); // 마스쿼레이드는 to가 없음!!
+	req.push(is_delete);
+
+	if (!request(req, res))
+		return false;
+
+	if (res.method == METHOD_ERROR)
+	{
+		cout << "An error was occured! Error : " << res.get_string(0) << endl;
+		return false;
+	}
+
+	cout << "Rule successfully added!" << endl;
+	return true;
+}

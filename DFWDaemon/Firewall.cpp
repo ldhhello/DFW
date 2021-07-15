@@ -8,6 +8,7 @@ void Firewall::iptables(const string& str)
 
 void Firewall::iptables(format f)
 {
+	cout << "Firewall::iptables(" << f << ");\n";
 	iptables(f.str());
 }
 
@@ -39,6 +40,12 @@ void Firewall::initialize()
 
 	iptables("-t nat -D PREROUTING -j FIREWALL_PREROUTING");
 	iptables("-t nat -I PREROUTING -j FIREWALL_PREROUTING");
+
+	iptables("-t nat -N FIREWALL_POSTROUTING");
+	iptables("-t nat -F FIREWALL_POSTROUTING");
+
+	iptables("-t nat -D POSTROUTING -j FIREWALL_POSTROUTING");
+	iptables("-t nat -I POSTROUTING -j FIREWALL_POSTROUTING");
 
 	//iptables("-A FIREWALL_INPUT -p tcp --dport 22 -j ACCEPT"); // 이거 디버깅 편할려고 있는거임
 
@@ -95,4 +102,97 @@ void Firewall::redirect(int protocol, int port, const string& source, int to_por
 	string port_str = "--dport " + to_string(port);
 
 	iptables(format("-t nat -A FIREWALL_PREROUTING %s %s %s -j REDIRECT --to %d") % protocol_str[protocol] % source_str % port_str % to_port);
+}
+
+void Firewall::snat(int protocol, int port, const string& source, const string& to)
+{
+	if (protocol == 0) // 모든 프로토콜은 여기서는 포트 지정을 해야 해서 TCP / UDP만 구현함.
+	{
+		snat(1, port, source, to); // TCP
+		snat(2, port, source, to); // UDP
+		return;
+	}
+
+	// 모든 프로토콜, TCP, UDP, ICMP
+	if (protocol > 4 || protocol < 0)
+		return;
+
+	string source_str;
+	if (source == "all")
+		source_str = "";
+	else
+		source_str = "-s " + source;
+
+	string port_str;
+	if (protocol == 3 || port == 0) // icmp이거나 모든 포트 허용일 경우
+		port_str = "";
+	else
+		port_str = "--dport " + to_string(port);
+
+	
+
+	iptables(format("-A FIREWALL_POSTROUTING -t nat %s %s %s -j SNAT --to-source %s")
+		% protocol_str[protocol] % source_str % port_str % to);
+}
+
+void Firewall::dnat(int protocol, int port, const string& source, const string& to)
+{
+	if (protocol == 0) // 모든 프로토콜은 여기서는 포트 지정을 해야 해서 TCP / UDP만 구현함.
+	{
+		dnat(1, port, source, to); // TCP
+		dnat(2, port, source, to); // UDP
+		return;
+	}
+
+	// 모든 프로토콜, TCP, UDP, ICMP
+	if (protocol > 4 || protocol < 0)
+		return;
+
+	string source_str;
+	if (source == "all")
+		source_str = "";
+	else
+		source_str = "-s " + source;
+
+	string port_str;
+	if (protocol == 3 || port == 0) // icmp이거나 모든 포트 허용일 경우
+		port_str = "";
+	else
+		port_str = "--dport " + to_string(port);
+
+
+
+	iptables(format("-A FIREWALL_PREROUTING -t nat %s %s %s -j DNAT --to-destination %s")
+		% protocol_str[protocol] % source_str % port_str % to);
+}
+
+void Firewall::masquerade(int protocol, int port, const string& source, const string& to)
+{
+	if (protocol == 0) // 모든 프로토콜은 여기서는 포트 지정을 해야 해서 TCP / UDP만 구현함.
+	{
+		masquerade(1, port, source, to); // TCP
+		masquerade(2, port, source, to); // UDP
+		return;
+	}
+
+	// 모든 프로토콜, TCP, UDP, ICMP
+	if (protocol > 4 || protocol < 0)
+		return;
+
+	string source_str;
+	if (source == "all")
+		source_str = "";
+	else
+		source_str = "-s " + source;
+
+	string port_str;
+	if (protocol == 3 || port == 0) // icmp이거나 모든 포트 허용일 경우
+		port_str = "";
+	else
+		port_str = "--dport " + to_string(port);
+
+
+
+	iptables(format("-A FIREWALL_POSTROUTING -t nat %s %s %s -j MASQUERADE")
+		% protocol_str[protocol] % source_str % port_str);
 }

@@ -25,5 +25,8 @@ public:
 	static void initialize();
 	static void allow(int protocol, int port, const string& source);
 	static void redirect(int protocol, int port, const string& source, int to_port);
+	static void snat(int protocol, int port, const string& source, const string& to);
+	static void dnat(int protocol, int port, const string& source, const string& to);
+	static void masquerade(int protocol, int port, const string& source, const string& to);
 };
 

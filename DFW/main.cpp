@@ -13,6 +13,7 @@ int main(int argc, char** argv)
     string source;
     string redirect, to;
     string iptables_rule;
+    string snat, dnat, masquerade;
 
     source = "all";
 
@@ -23,6 +24,9 @@ int main(int argc, char** argv)
         ("allow", opt::value<string>(&accept_port), "Add rule that allows a port")
         ("redirect", opt::value<string>(&redirect), "Add rule that redirects a port")
         ("iptables", opt::value<string>(&iptables_rule), "Add IPTABLES rule directly")
+        ("snat", opt::value<string>(&snat), "Add rule that translates source address of packet")
+        ("dnat", opt::value<string>(&dnat), "Add rule that translates destination address of packet")
+        ("masquerade", opt::value<string>(&masquerade), "Add rule that masquerades source address")
         ("to", opt::value<string>(&to), "Destination")
         ("reload", "Reload the daemon")
         ("delete,d", "Delete the rule")
@@ -44,12 +48,12 @@ int main(int argc, char** argv)
     catch (exception& e)
     {
         cout << e.what() << endl;
-        cout << "DFW v1.0 (Written by Donghyun Lee)\n\n" << desc << endl;
+        cout << "DFW v2.0 (Written by Donghyun Lee)\n\n" << desc << endl;
         return 1;
     }
     if (vm.count("help"))
     {
-        cout << "DFW v1.0 (Written by Donghyun Lee)\n\n" << desc << endl;
+        cout << "DFW v2.0 (Written by Donghyun Lee)\n\n" << desc << endl;
         return 1;
     }
 
@@ -76,9 +80,24 @@ int main(int argc, char** argv)
         bool is_delete = vm.count("delete");
         Processor::iptables(iptables_rule, is_delete);
     }
+    else if (vm.count("snat"))
+    {
+        bool is_delete = vm.count("delete");
+        Processor::snat(snat, source, to, is_delete);
+    }
+    else if (vm.count("dnat"))
+    {
+        bool is_delete = vm.count("delete");
+        Processor::dnat(dnat, source, to, is_delete);
+    }
+    else if (vm.count("masquerade"))
+    {
+        bool is_delete = vm.count("delete");
+        Processor::masquerade(masquerade, source, to, is_delete);
+    }
     else
     {
-        cout << "DFW v1.0 (Written by Donghyun Lee)\n\n" << desc << endl;
+        cout << "DFW v2.0 (Written by Donghyun Lee)\n\n" << desc << endl;
         return 1;
     }
 

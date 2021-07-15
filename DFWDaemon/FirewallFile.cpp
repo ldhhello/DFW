@@ -64,6 +64,60 @@ void FirewallFile::reload()
 
 			Firewall::iptables(rule);
 		}
+		else if (j["type"].get_string() == "snat")
+		{
+			int protocol = 0;
+			for (; protocol < 4; protocol++)
+			{
+				if (protocol_str[protocol] == j["protocol"].get_string())
+					break;
+			}
+
+			if (protocol == 4)
+				continue;
+
+			int port = atoi(j["port"].get_string().c_str());
+			const string& source = j["source"].get_string();
+			const string& to = j["to"].get_string();
+
+			Firewall::snat(protocol, port, source, to);
+		}
+		else if (j["type"].get_string() == "dnat")
+		{
+			int protocol = 0;
+			for (; protocol < 4; protocol++)
+			{
+				if (protocol_str[protocol] == j["protocol"].get_string())
+					break;
+			}
+
+			if (protocol == 4)
+				continue;
+
+			int port = atoi(j["port"].get_string().c_str());
+			const string& source = j["source"].get_string();
+			const string& to = j["to"].get_string();
+
+			Firewall::dnat(protocol, port, source, to);
+		}
+		else if (j["type"].get_string() == "masquerade")
+		{
+			int protocol = 0;
+			for (; protocol < 4; protocol++)
+			{
+				if (protocol_str[protocol] == j["protocol"].get_string())
+					break;
+			}
+
+			if (protocol == 4)
+				continue;
+
+			int port = atoi(j["port"].get_string().c_str());
+			const string& source = j["source"].get_string();
+			const string& to = j["to"].get_string();
+
+			Firewall::masquerade(protocol, port, source, to);
+		}
 	}
 }
 
@@ -304,6 +358,258 @@ bool FirewallFile::delete_iptables(const string& rule)
 		if (j["type"].get_string() == "iptables")
 		{
 			if (rule == j["rule"].get_string())
+			{
+				is_modified = true;
+				json.get_arr().erase(json.get_arr().begin() + i);
+				break;
+			}
+		}
+	}
+
+	ofstream fout(file_path);
+	fout << json;
+	fout.close();
+
+	return is_modified;
+}
+
+void FirewallFile::snat(int protocol, int port, const string& source, const string& to)
+{
+	Json json;
+	json.parse_from_file(file_path);
+
+	if (json.get_type() != JSON_ARRAY)
+	{
+		json.make(JSON_ARRAY);
+	}
+
+	vector<Json>& arr = json.get_arr();
+	arr.emplace_back(JSON_OBJECT);
+	Json& j = arr.back();
+
+	string protocol_str[] = {
+		"all",
+		"tcp",
+		"udp",
+		"icmp"
+	};
+
+	j["type"].set_string("snat");
+	j["protocol"].set_string(protocol_str[protocol]);
+	j["port"].set_string(to_string(port));
+	j["source"].set_string(source);
+	j["to"].set_string(to);
+
+	ofstream fout(file_path);
+	fout << json;
+	fout.close();
+}
+
+bool FirewallFile::delete_snat(int protocol, int port, const string& source, const string& to)
+{
+	Json json;
+	json.parse_from_file(file_path);
+
+	if (json.get_type() != JSON_ARRAY)
+		return false;
+
+	string protocol_str[] = {
+		"all",
+		"tcp",
+		"udp",
+		"icmp"
+	};
+
+	bool is_modified = false;
+	for (int i = 0; i < json.get_arr().size(); i++)
+	{
+		Json& j = json[i];
+
+		if (j["type"].get_string() == "snat")
+		{
+			int protocol_ = 0;
+			for (; protocol_ < 4; protocol_++)
+			{
+				if (protocol_str[protocol_] == j["protocol"].get_string())
+					break;
+			}
+
+			if (protocol_ == 4)
+				continue;
+
+			int port_ = atoi(j["port"].get_string().c_str());
+			const string& source_ = j["source"].get_string();
+			const string& to_ = j["to"].get_string();
+
+			if (protocol == protocol_ && port == port_ && source == source_ && to == to_)
+			{
+				is_modified = true;
+				json.get_arr().erase(json.get_arr().begin() + i);
+				break;
+			}
+		}
+	}
+
+	ofstream fout(file_path);
+	fout << json;
+	fout.close();
+
+	return is_modified;
+}
+
+void FirewallFile::dnat(int protocol, int port, const string& source, const string& to)
+{
+	Json json;
+	json.parse_from_file(file_path);
+
+	if (json.get_type() != JSON_ARRAY)
+	{
+		json.make(JSON_ARRAY);
+	}
+
+	vector<Json>& arr = json.get_arr();
+	arr.emplace_back(JSON_OBJECT);
+	Json& j = arr.back();
+
+	string protocol_str[] = {
+		"all",
+		"tcp",
+		"udp",
+		"icmp"
+	};
+
+	j["type"].set_string("dnat");
+	j["protocol"].set_string(protocol_str[protocol]);
+	j["port"].set_string(to_string(port));
+	j["source"].set_string(source);
+	j["to"].set_string(to);
+
+	ofstream fout(file_path);
+	fout << json;
+	fout.close();
+}
+
+bool FirewallFile::delete_dnat(int protocol, int port, const string& source, const string& to)
+{
+	Json json;
+	json.parse_from_file(file_path);
+
+	if (json.get_type() != JSON_ARRAY)
+		return false;
+
+	string protocol_str[] = {
+		"all",
+		"tcp",
+		"udp",
+		"icmp"
+	};
+
+	bool is_modified = false;
+	for (int i = 0; i < json.get_arr().size(); i++)
+	{
+		Json& j = json[i];
+
+		if (j["type"].get_string() == "dnat")
+		{
+			int protocol_ = 0;
+			for (; protocol_ < 4; protocol_++)
+			{
+				if (protocol_str[protocol_] == j["protocol"].get_string())
+					break;
+			}
+
+			if (protocol_ == 4)
+				continue;
+
+			int port_ = atoi(j["port"].get_string().c_str());
+			const string& source_ = j["source"].get_string();
+			const string& to_ = j["to"].get_string();
+
+			if (protocol == protocol_ && port == port_ && source == source_ && to == to_)
+			{
+				is_modified = true;
+				json.get_arr().erase(json.get_arr().begin() + i);
+				break;
+			}
+		}
+	}
+
+	ofstream fout(file_path);
+	fout << json;
+	fout.close();
+
+	return is_modified;
+}
+
+void FirewallFile::masquerade(int protocol, int port, const string& source, const string& to)
+{
+	Json json;
+	json.parse_from_file(file_path);
+
+	if (json.get_type() != JSON_ARRAY)
+	{
+		json.make(JSON_ARRAY);
+	}
+
+	vector<Json>& arr = json.get_arr();
+	arr.emplace_back(JSON_OBJECT);
+	Json& j = arr.back();
+
+	string protocol_str[] = {
+		"all",
+		"tcp",
+		"udp",
+		"icmp"
+	};
+
+	j["type"].set_string("masquerade");
+	j["protocol"].set_string(protocol_str[protocol]);
+	j["port"].set_string(to_string(port));
+	j["source"].set_string(source);
+	j["to"].set_string(to);
+
+	ofstream fout(file_path);
+	fout << json;
+	fout.close();
+}
+
+bool FirewallFile::delete_masquerade(int protocol, int port, const string& source, const string& to)
+{
+	Json json;
+	json.parse_from_file(file_path);
+
+	if (json.get_type() != JSON_ARRAY)
+		return false;
+
+	string protocol_str[] = {
+		"all",
+		"tcp",
+		"udp",
+		"icmp"
+	};
+
+	bool is_modified = false;
+	for (int i = 0; i < json.get_arr().size(); i++)
+	{
+		Json& j = json[i];
+
+		if (j["type"].get_string() == "masquerade")
+		{
+			int protocol_ = 0;
+			for (; protocol_ < 4; protocol_++)
+			{
+				if (protocol_str[protocol_] == j["protocol"].get_string())
+					break;
+			}
+
+			if (protocol_ == 4)
+				continue;
+
+			int port_ = atoi(j["port"].get_string().c_str());
+			const string& source_ = j["source"].get_string();
+			const string& to_ = j["to"].get_string();
+
+			if (protocol == protocol_ && port == port_ && source == source_ && to == to_)
 			{
 				is_modified = true;
 				json.get_arr().erase(json.get_arr().begin() + i);
