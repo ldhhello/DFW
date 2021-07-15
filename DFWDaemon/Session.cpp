@@ -63,6 +63,9 @@ void Session::on_read_packet(bool is_success)
 		HANDLE_METHOD(METHOD_RELOAD, on_reload, 0);
 		HANDLE_METHOD(METHOD_REDIRECT, on_redirect, 5);
 		HANDLE_METHOD(METHOD_IPTABLES, on_iptables, 2);
+		HANDLE_METHOD(METHOD_SNAT, on_snat, 5);
+		HANDLE_METHOD(METHOD_DNAT, on_dnat, 5);
+		HANDLE_METHOD(METHOD_MASQUERADE, on_masquerade, 5);
 
 	default:
 		close();
@@ -133,6 +136,48 @@ void Session::on_iptables()
 		FirewallFile::delete_iptables(recv_packet.get_string(0));
 	else
 		FirewallFile::iptables(recv_packet.get_string(0));
+
+	packet.clear();
+	packet.set_method(METHOD_OK);
+	sock->write_packet(packet);
+}
+
+void Session::on_snat()
+{
+	bool is_delete = recv_packet.get_int(4);
+
+	if (is_delete)
+		FirewallFile::delete_snat(recv_packet.get_int(0), recv_packet.get_int(1), recv_packet.get_string(2), recv_packet.get_string(3));
+	else
+		FirewallFile::snat(recv_packet.get_int(0), recv_packet.get_int(1), recv_packet.get_string(2), recv_packet.get_string(3));
+
+	packet.clear();
+	packet.set_method(METHOD_OK);
+	sock->write_packet(packet);
+}
+
+void Session::on_dnat()
+{
+	bool is_delete = recv_packet.get_int(4);
+
+	if (is_delete)
+		FirewallFile::delete_dnat(recv_packet.get_int(0), recv_packet.get_int(1), recv_packet.get_string(2), recv_packet.get_string(3));
+	else
+		FirewallFile::dnat(recv_packet.get_int(0), recv_packet.get_int(1), recv_packet.get_string(2), recv_packet.get_string(3));
+
+	packet.clear();
+	packet.set_method(METHOD_OK);
+	sock->write_packet(packet);
+}
+
+void Session::on_masquerade()
+{
+	bool is_delete = recv_packet.get_int(4);
+
+	if (is_delete)
+		FirewallFile::delete_masquerade(recv_packet.get_int(0), recv_packet.get_int(1), recv_packet.get_string(2), recv_packet.get_string(3));
+	else
+		FirewallFile::masquerade(recv_packet.get_int(0), recv_packet.get_int(1), recv_packet.get_string(2), recv_packet.get_string(3));
 
 	packet.clear();
 	packet.set_method(METHOD_OK);

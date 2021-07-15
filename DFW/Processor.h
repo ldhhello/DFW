@@ -28,5 +28,8 @@ public:
 	static bool redirect(const string& port, const string& source, int to_port, bool is_delete);
 	static void reload();
 	static bool iptables(const string& rule, bool is_delete);
+	static bool snat(const string& port, const string& source, const string& to, bool is_delete);
+	static bool dnat(const string& port, const string& source, const string& to, bool is_delete);
+	static bool masquerade(const string& port, const string& source, const string& to, bool is_delete);
 };
 

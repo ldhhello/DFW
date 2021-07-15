@@ -19,5 +19,12 @@ public:
 
 	static void iptables(const string& rule);
 	static bool delete_iptables(const string& rule);
+
+	static void snat(int protocol, int port, const string& source, const string& to);
+	static bool delete_snat(int protocol, int port, const string& source, const string& to);
+	static void dnat(int protocol, int port, const string& source, const string& to);
+	static bool delete_dnat(int protocol, int port, const string& source, const string& to);
+	static void masquerade(int protocol, int port, const string& source, const string& to);
+	static bool delete_masquerade(int protocol, int port, const string& source, const string& to);
 };
 
